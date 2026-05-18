@@ -1,0 +1,14 @@
+{
+  "name": "ai2work-android",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "android": "npx cap sync android && npx cap open android",
+    "build": "npx cap sync android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7",
+    "@capacitor/cli": "^7",
+    "@capacitor/core": "^7"
+  }
+}
