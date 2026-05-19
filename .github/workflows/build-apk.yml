@@ -39,19 +39,15 @@ jobs:
 
       - run: cd android && ./gradlew assembleRelease
 
-      - name: Delete old release tag (if exists)
+      - name: Create Release
         run: |
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk ai2work.apk
           gh release delete v1.0.0 --yes 2>/dev/null || true
           git push origin :refs/tags/v1.0.0 2>/dev/null || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.0
-          files: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          name: ai2work.apk
-          body: "Native Ethereum wallet build — Android Keystore, EIP-1559, wagmi-compatible"
+          sleep 2
+          gh release create v1.0.0 ai2work.apk \
+            --title "ai2work.apk" \
+            --notes "Native Ethereum wallet — Android Keystore · EIP-1559 · wagmi-compatible" \
+            --repo AtlasNexusTech/ai2work-android
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
