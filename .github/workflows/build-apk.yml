@@ -21,16 +21,15 @@ jobs:
       - run: npx cap add android
       - run: npx cap sync android
 
-      # Add Kotlin + BouncyCastle to generated Android project
-      - name: Configure Kotlin & dependencies
+      - name: Configure Kotlin + BouncyCastle
         run: |
-          # Add Kotlin plugin to project-level build.gradle
+          # Project-level: Kotlin plugin declaration
           sed -i "/plugins {/a \    id 'org.jetbrains.kotlin.android' version '2.0.21' apply false" android/build.gradle
-          # Apply Kotlin plugin + add BouncyCastle to app-level build.gradle
-          sed -i "/plugins {/a \    id 'org.jetbrains.kotlin.android'" android/app/build.gradle
-          sed -i "/dependencies {/a \    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'" android/app/build.gradle
+          # App-level: apply kotlin-android (Capacitor uses apply plugin: syntax)
+          echo "" >> android/app/build.gradle
+          echo "apply plugin: 'kotlin-android'" >> android/app/build.gradle
+          echo "dependencies { implementation 'org.bouncycastle:bcprov-jdk15on:1.70' }" >> android/app/build.gradle
 
-      # Copy native wallet plugin sources
       - name: Copy native wallet plugin
         run: |
           NATIVE_DIR="android/app/src/main/java/tech/atlasnexus/ai2work/wallet"

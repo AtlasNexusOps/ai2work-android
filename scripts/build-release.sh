@@ -6,10 +6,11 @@ npm install
 npx cap add android 2>/dev/null || true
 npx cap sync android
 
-# Kotlin + BouncyCastle
+# Kotlin + BouncyCastle (Capacitor uses apply plugin: syntax)
 sed -i "/plugins {/a \    id 'org.jetbrains.kotlin.android' version '2.0.21' apply false" android/build.gradle
-sed -i "/plugins {/a \    id 'org.jetbrains.kotlin.android'" android/app/build.gradle
-sed -i "/dependencies {/a \    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'" android/app/build.gradle
+echo "" >> android/app/build.gradle
+echo "apply plugin: 'kotlin-android'" >> android/app/build.gradle
+echo "dependencies { implementation 'org.bouncycastle:bcprov-jdk15on:1.70' }" >> android/app/build.gradle
 
 # Copy native wallet sources
 NATIVE_DIR="android/app/src/main/java/tech/atlasnexus/ai2work/wallet"
