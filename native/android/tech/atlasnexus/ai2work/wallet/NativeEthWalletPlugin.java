@@ -57,7 +57,7 @@ public class NativeEthWalletPlugin extends Plugin {
 
     @Override
     public void load() {
-        AppContextHolder.init(getContext());
+        AppContextHolder.INSTANCE.init(getContext());
         Log.i(TAG, "NativeEthWallet loaded, injecting bridge");
         injectBridge();
     }
