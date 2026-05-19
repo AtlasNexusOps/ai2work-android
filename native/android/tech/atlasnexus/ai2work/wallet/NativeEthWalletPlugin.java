@@ -62,11 +62,6 @@ public class NativeEthWalletPlugin extends Plugin {
         injectBridge();
     }
 
-    @Override
-    protected void handleOnPageStarted() {
-        injectBridge();
-    }
-
     private void injectBridge() {
         try {
             WebView wv = getBridge().getWebView();
