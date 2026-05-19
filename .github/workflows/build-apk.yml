@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,9 +25,7 @@ jobs:
 
       - name: Add Kotlin + BouncyCastle
         run: |
-          # Add Kotlin to buildscript classpath
           sed -i "/dependencies {/a \        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21'" android/build.gradle
-          # Apply kotlin-android in app
           echo "" >> android/app/build.gradle
           echo "apply plugin: 'kotlin-android'" >> android/app/build.gradle
           echo "dependencies { implementation 'org.bouncycastle:bcprov-jdk15on:1.70' }" >> android/app/build.gradle
@@ -39,11 +39,19 @@ jobs:
 
       - run: cd android && ./gradlew assembleRelease
 
+      - name: Delete old release tag (if exists)
+        run: |
+          gh release delete v1.0.0 --yes 2>/dev/null || true
+          git push origin :refs/tags/v1.0.0 2>/dev/null || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
           files: android/app/build/outputs/apk/release/app-release-unsigned.apk
           name: ai2work.apk
+          body: "Native Ethereum wallet build — Android Keystore, EIP-1559, wagmi-compatible"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
