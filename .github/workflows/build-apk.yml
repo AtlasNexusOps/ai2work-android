@@ -26,15 +26,9 @@ jobs:
         run: |
           # Add Kotlin plugin to project-level build.gradle
           sed -i "/plugins {/a \    id 'org.jetbrains.kotlin.android' version '2.0.21' apply false" android/build.gradle
-          # Add BouncyCastle to app-level build.gradle
-          sed -i "/dependencies {/a \    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'" android/app/build.gradle
-          # Apply Kotlin plugin in app-level build.gradle
+          # Apply Kotlin plugin + add BouncyCastle to app-level build.gradle
           sed -i "/plugins {/a \    id 'org.jetbrains.kotlin.android'" android/app/build.gradle
-          # Set JVM target for Kotlin
-          echo "" >> android/app/build.gradle
-          echo "android {" >> android/app/build.gradle
-          echo "    kotlinOptions { jvmTarget = '21' }" >> android/app/build.gradle
-          echo "}" >> android/app/build.gradle
+          sed -i "/dependencies {/a \    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'" android/app/build.gradle
 
       # Copy native wallet plugin sources
       - name: Copy native wallet plugin
