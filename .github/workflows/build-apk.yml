@@ -20,6 +20,20 @@ jobs:
       - run: npm install
       - run: npx cap add android
       - run: npx cap sync android
+
+      # Add BouncyCastle dependency for secp256k1 ECDSA
+      - name: Add BouncyCastle to build.gradle
+        run: |
+          sed -i "/dependencies {/a \    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'" android/app/build.gradle
+
+      # Copy native wallet plugin sources into the generated android project
+      - name: Copy native wallet plugin
+        run: |
+          NATIVE_DIR="android/app/src/main/java/tech/atlasnexus/ai2work/wallet"
+          mkdir -p "$NATIVE_DIR"
+          cp -v native/android/tech/atlasnexus/ai2work/wallet/*.kt "$NATIVE_DIR/"
+          cp -v native/android/tech/atlasnexus/ai2work/wallet/*.java "$NATIVE_DIR/"
+
       - run: cd android && ./gradlew assembleRelease
 
       - name: Upload APK to Release

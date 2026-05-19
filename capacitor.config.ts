@@ -20,6 +20,7 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
   },
+  includePlugins: ["NativeEthWallet"],
 };
 
 export default config;
