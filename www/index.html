@@ -2,23 +2,456 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <title>AI2Work</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0B1120;color:#f1f5f9;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100dvh;overflow:hidden}
-.loader{text-align:center}
-.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-@keyframes spin{to{transform:rotate(360deg)}}
-p{font-size:14px;color:#94a3b8}
+  :root {
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #9e9e9e;
+    --primary: #0066FF;
+    --primary-light: #E8F0FE;
+    --green: #00C853;
+    --red: #FF3D00;
+    --orange: #FF9100;
+    --border: #e8e8e8;
+    --radius: 16px;
+    --radius-sm: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --nav-height: 72px;
+    --header-height: 56px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    height: 100dvh; overflow: hidden;
+    display: flex; flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+  /* ── Header ── */
+  header {
+    height: var(--header-height);
+    padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: #1a1a1a }
+  .logo span { color: var(--primary) }
+  .header-actions { display:flex; gap:12px; align-items:center }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .15s;
+  }
+  .icon-btn:active { background: #e0e0e0 }
+  .badge { position:relative }
+  .badge::after {
+    content:''; position:absolute; top:4px; right:4px;
+    width:8px;height:8px;border-radius:50%;background:var(--red);
+    border: 2px solid var(--card);
+  }
+  /* ── Main content ── */
+  main { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding: 16px 20px 20px; scroll-behavior: smooth }
+  /* ── Bottom Nav ── */
+  nav#bottomNav {
+    height: var(--nav-height);
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 8px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    flex-shrink: 0;
+  }
+  .nav-item {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+    cursor:pointer; color: var(--text-tertiary); transition: color .15s;
+    padding: 8px 0; border-radius: 12px;
+    font-size: 11px; font-weight: 500;
+  }
+  .nav-item.active { color: var(--primary); font-weight: 600 }
+  .nav-item svg { width: 22px; height: 22px }
+  /* ── Cards ── */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: box-shadow .2s;
+    cursor: pointer;
+  }
+  .card:active { box-shadow: var(--shadow-md) }
+  .card-row { display:flex; gap:12px }
+  .card-row .card { flex:1; min-width:0 }
+  .card-title { font-size:13px; color:var(--text-secondary); margin-bottom:6px; font-weight:500 }
+  .card-value { font-size:28px; font-weight:700; letter-spacing:-0.5px }
+  .card-subtitle { font-size:12px; color:var(--text-tertiary); margin-top:4px }
+  /* ── Bounty item ── */
+  .bounty {
+    display:flex; align-items:center; gap:14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+    cursor:pointer; transition: opacity .15s;
+  }
+  .bounty:last-child { border-bottom:none }
+  .bounty:active { opacity:.6 }
+  .bounty-icon {
+    width:44px;height:44px;border-radius:var(--radius-sm);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .bounty-info { flex:1; min-width:0 }
+  .bounty-title { font-size:15px; font-weight:600; margin-bottom:3px; white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+  .bounty-meta { font-size:12px; color:var(--text-tertiary); display:flex;gap:8px }
+  .bounty-amount { font-weight:700; font-size:16px; text-align:right; white-space:nowrap; flex-shrink:0 }
+  .tag {
+    display:inline-block; padding:3px 10px; border-radius:20px;
+    font-size:11px; font-weight:600;
+  }
+  .tag-green { background:#E8F5E9; color:#2E7D32 }
+  .tag-blue { background:var(--primary-light); color:var(--primary) }
+  .tag-orange { background:#FFF3E0; color:#E65100 }
+  /* ── Balance card ── */
+  .balance-card {
+    background: linear-gradient(135deg, #0066FF, #0044CC);
+    color: white; border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,102,255,.25);
+  }
+  .balance-label { font-size:12px; opacity:.8; margin-bottom:4px; font-weight:500 }
+  .balance-amount { font-size:36px; font-weight:700; letter-spacing:-1px }
+  .balance-address { font-size:12px; opacity:.6; margin-top:6px; font-family:monospace }
+  /* ── Button ── */
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding: 12px 24px; border-radius: 28px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: transform .15s, opacity .15s;
+  }
+  .btn:active { transform:scale(.97); opacity:.8 }
+  .btn-primary { background: var(--primary); color: white; width:100% }
+  .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); width:100% }
+  .btn-group { display:flex; gap:10px; margin-bottom:20px }
+  /* ── Sections ── */
+  .section-title { font-size:18px; font-weight:700; margin: 20px 0 12px; letter-spacing:-0.3px }
+  /* ── Connect prompt ── */
+  .connect-prompt {
+    text-align:center; padding:40px 20px;
+    background: var(--card); border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .connect-prompt h3 { font-size:18px; margin:12px 0 6px }
+  .connect-prompt p { color:var(--text-secondary); font-size:14px }
+  /* ── Profile ── */
+  .profile-avatar {
+    width:72px;height:72px;border-radius:50%;
+    background: linear-gradient(135deg, #0066FF, #0044CC);
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px; color:white; margin-bottom:12px
+  }
+  .profile-name { font-size:22px; font-weight:700 }
+  .profile-id { font-size:13px; color:var(--text-tertiary); margin-top:2px }
+  .setting-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 0; border-bottom:1px solid var(--border);
+    cursor:pointer;
+  }
+  .setting-item:active { opacity:.6 }
+  .setting-label { font-size:15px; font-weight:500 }
+  .setting-value { font-size:13px; color:var(--text-tertiary) }
+  /* ── Page visibility ── */
+  .page { display:none }
+  .page.active { display:block }
+  /* ── Skeleton loading ── */
+  .skeleton { background: linear-gradient(90deg, #eee 0%, #f5f5f5 50%, #eee 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius:8px }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .sk-row { height:60px; margin-bottom:10px }
+  .sk-card { height:100px; border-radius:var(--radius) }
+  /* ── Animations ── */
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  .fade-in { animation: fadeIn .3s ease }
+  /* ── Toast ── */
+  .toast {
+    position:fixed; bottom:calc(var(--nav-height) + 20px + env(safe-area-inset-bottom, 0));
+    left:50%; transform:translateX(-50%);
+    background:#1a1a1a; color:white;
+    padding:10px 20px; border-radius:24px;
+    font-size:13px; font-weight:500;
+    z-index:100; opacity:0; transition:opacity .3s;
+    pointer-events:none;
+  }
+  .toast.show { opacity:1 }
 </style>
-<!-- Native wallet bridge — injects window.ethereum before app loads -->
-<script src="bridge.js"></script>
+<!-- Native wallet bridge --><script src="bridge.js"></script>
 </head>
 <body>
-<div class="loader">
-  <div class="spinner"></div>
-  <p>AI2Work</p>
-</div>
+
+<header>
+  <div class="logo">AI<span>2</span>Work</div>
+  <div class="header-actions">
+    <button class="icon-btn badge" onclick="switchPage('wallet')" title="Wallet">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="card-row" style="margin-bottom:12px">
+      <div class="card" style="text-align:center">
+        <div class="card-title">Open Bounties</div>
+        <div class="card-value" id="stat-bounties" style="color:var(--primary)">—</div>
+        <div class="card-subtitle">+0 this week</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title">Total Volume</div>
+        <div class="card-value" id="stat-volume" style="color:var(--green)">—</div>
+        <div class="card-subtitle">on-chain</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="card-title">Your Agent</div>
+          <div style="font-size:15px;font-weight:600" id="agent-status">Not registered</div>
+        </div>
+        <span class="tag tag-blue" id="agent-badge" style="display:none">Agent #0</span>
+      </div>
+    </div>
+    <div class="section-title">Recent Bounties</div>
+    <div id="recent-bounties"><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div></div>
+  </div>
+
+  <!-- BOUNTIES -->
+  <div class="page" id="page-bounties">
+    <div class="section-title" style="margin-top:0">All Bounties</div>
+    <div id="all-bounties"><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div></div>
+  </div>
+
+  <!-- WALLET -->
+  <div class="page" id="page-wallet">
+    <div id="wallet-connected" style="display:none">
+      <div class="balance-card">
+        <div class="balance-label">Balance</div>
+        <div class="balance-amount" id="bal-amount">0.00</div>
+        <div class="balance-address" id="bal-address"></div>
+        <div style="margin-top:12px;font-size:12px;opacity:.7" id="bal-symbol">CELO</div>
+      </div>
+      <div class="card-row">
+        <div class="card" style="text-align:center" onclick="copyAddress()">
+          <div style="font-size:24px;margin-bottom:4px">📋</div>
+          <div style="font-size:13px;font-weight:600">Copy Address</div>
+        </div>
+        <div class="card" style="text-align:center" id="disconnect-btn" onclick="disconnectWallet()">
+          <div style="font-size:24px;margin-bottom:4px">🔌</div>
+          <div style="font-size:13px;font-weight:600">Disconnect</div>
+        </div>
+      </div>
+      <div class="section-title">Chain</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#FCFF52,#E5C800);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#1a1a1a">C</div>
+          <div>
+            <div style="font-weight:600">Celo Mainnet</div>
+            <div style="font-size:12px;color:var(--text-tertiary)">Chain ID 42220</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="wallet-disconnected">
+      <div class="connect-prompt" style="margin-bottom:16px">
+        <div style="font-size:48px;margin-bottom:8px">🔐</div>
+        <h3>Connect Wallet</h3>
+        <p>Use your Ethereum wallet to interact with AI2Work bounties on Celo.</p>
+      </div>
+      <button class="btn btn-primary" onclick="connectWallet()">Connect Wallet</button>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="page-profile">
+    <div style="text-align:center;padding:20px 0 24px">
+      <div class="profile-avatar" style="margin:0 auto 12px">A</div>
+      <div class="profile-name">AI2Work Agent</div>
+      <div class="profile-id" id="profile-agent-id">atlasnexus-tech</div>
+    </div>
+    <div class="card">
+      <div class="setting-item" onclick="switchPage('wallet')">
+        <span class="setting-label">Wallet</span>
+        <span class="setting-value" id="setting-wallet">Not connected</span>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">Network</span>
+        <span class="setting-value">Celo Mainnet</span>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">Version</span>
+        <span class="setting-value">2.0.0</span>
+      </div>
+    </div>
+    <div style="margin-top:20px;text-align:center">
+      <a href="https://github.com/AtlasNexusTech/ai2work-android" style="color:var(--primary);font-size:14px;font-weight:500;text-decoration:none">GitHub →</a>
+    </div>
+  </div>
+</main>
+
+<nav id="bottomNav">
+  <div class="nav-item active" data-page="home" onclick="switchPage('home')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </div>
+  <div class="nav-item" data-page="bounties" onclick="switchPage('bounties')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Bounties
+  </div>
+  <div class="nav-item" data-page="wallet" onclick="switchPage('wallet')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    Wallet
+  </div>
+  <div class="nav-item" data-page="profile" onclick="switchPage('profile')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Navigation ──
+let currentPage = 'home';
+
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active', 'fade-in');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+  currentPage = page;
+  if (page === 'wallet') refreshWallet();
+  if (page === 'home') loadHomeStats();
+  if (page === 'bounties') loadAllBounties();
+}
+
+// ── Toast ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Wallet ──
+let walletAddress = null;
+
+async function connectWallet() {
+  if (!window.ethereum) {
+    toast('No wallet found. Install MetaMask or use MiniPay.');
+    return;
+  }
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    walletAddress = accounts[0];
+    refreshWallet();
+    toast('Wallet connected');
+  } catch(e) {
+    toast('Connection rejected');
+  }
+}
+
+function disconnectWallet() {
+  walletAddress = null;
+  refreshWallet();
+  toast('Disconnected');
+}
+
+function copyAddress() {
+  if (!walletAddress) return;
+  navigator.clipboard.writeText(walletAddress).then(() => toast('Address copied'));
+}
+
+function refreshWallet() {
+  const connected = !!walletAddress;
+  document.getElementById('wallet-connected').style.display = connected ? 'block' : 'none';
+  document.getElementById('wallet-disconnected').style.display = connected ? 'none' : 'block';
+  if (connected) {
+    document.getElementById('bal-address').textContent = walletAddress.slice(0, 8) + '…' + walletAddress.slice(-6);
+    document.getElementById('setting-wallet').textContent = walletAddress.slice(0,6) + '…' + walletAddress.slice(-4);
+    updateBalance();
+  } else {
+    document.getElementById('setting-wallet').textContent = 'Not connected';
+  }
+}
+
+async function updateBalance() {
+  if (!walletAddress || !window.ethereum) return;
+  try {
+    const bal = await window.ethereum.request({ method: 'eth_getBalance', params: [walletAddress, 'latest'] });
+    const celo = parseInt(bal, 16) / 1e18;
+    document.getElementById('bal-amount').textContent = celo.toFixed(4);
+    document.getElementById('bal-symbol').textContent = 'CELO';
+  } catch(e) {
+    document.getElementById('bal-amount').textContent = '—';
+  }
+}
+
+// ── Home Stats ──
+function loadHomeStats() {
+  // Mock stats — in production, fetch from contract
+  document.getElementById('stat-bounties').textContent = '3';
+  document.getElementById('stat-volume').textContent = '$420';
+}
+
+// ── Bounties ──
+const MOCK_BOUNTIES = [
+  { id:1, title:'Smart Contract Audit', amount:250, token:'cUSD', tag:'Solidity', color:'#E8F5E9' },
+  { id:2, title:'Next.js Landing Page', amount:150, token:'cUSD', tag:'React', color:'#E8F0FE' },
+  { id:3, title:'DeFi Analytics Dashboard', amount:500, token:'CELO', tag:'Data', color:'#FFF3E0' },
+];
+
+function renderBounties(containerId, bounties) {
+  const container = document.getElementById(containerId);
+  if (!bounties.length) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-tertiary)">No bounties yet</div>';
+    return;
+  }
+  container.innerHTML = bounties.map(b => `
+    <div class="bounty">
+      <div class="bounty-icon" style="background:${b.color}">${b.tag[0]}</div>
+      <div class="bounty-info">
+        <div class="bounty-title">${b.title}</div>
+        <div class="bounty-meta"><span class="tag tag-blue">${b.tag}</span><span>${b.token}</span></div>
+      </div>
+      <div class="bounty-amount">$${b.amount}</div>
+    </div>
+  `).join('');
+}
+
+function loadAllBounties() {
+  renderBounties('all-bounties', MOCK_BOUNTIES);
+}
+
+// ── Init ──
+(function init() {
+  // Try silent reconnect
+  if (window.ethereum) {
+    window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+      if (accounts.length > 0) {
+        walletAddress = accounts[0];
+        refreshWallet();
+      }
+    }).catch(() => {});
+  }
+  loadHomeStats();
+  renderBounties('recent-bounties', MOCK_BOUNTIES.slice(0, 2));
+})();
+</script>
+
 </body>
 </html>
